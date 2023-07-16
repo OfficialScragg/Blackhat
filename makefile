@@ -1,6 +1,6 @@
 main:
-	gcc src/main.c -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o build/blackhat
+	gcc src/editor.c -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o build/blackhat-editor
 run: main
-	./build/blackhat
+	./build/blackhat-editor
 clean:
-	rm build/blackhat
+	rm build/blackhat-editor

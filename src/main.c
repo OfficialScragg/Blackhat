@@ -13,6 +13,7 @@ typedef struct Player {
     Rectangle rect;
     float speed;
     float health;
+    char* direction;
 } Player;
 typedef struct Tile {
     Rectangle rect;
@@ -29,16 +30,19 @@ void playerMovement();
 void drawMap();
 void prepareTerrain();
 void drawObjects();
+void drawPlayer();
 
 // Globals
 Camera2D camera = { 0 };
 Tile tiles[100000];
-Texture2D terrain_textures;
 int tile_count = 0;
+Texture2D terrain_textures;
+Texture2D player_textures;
 Player player = {
     { SCREEN_WIDTH/2-25, SCREEN_HEIGHT/2-25, 16, 16 },
-    0.5f,
-    100.0f
+    1.5f,
+    100.0f,
+    "down"
 };
 
 // Main function
@@ -53,10 +57,21 @@ int main(void){
 
 // Player movement
 void playerMovement(){
-    if(IsKeyDown(KEY_UP)) player.rect.y -= player.speed;
-    if(IsKeyDown(KEY_DOWN)) player.rect.y += player.speed;
-    if(IsKeyDown(KEY_LEFT)) player.rect.x -= player.speed;
-    if(IsKeyDown(KEY_RIGHT)) player.rect.x += player.speed;
+    if(IsKeyDown(KEY_LEFT)){
+        player.rect.x -= player.speed;
+        player.direction = "left";
+    }else if(IsKeyDown(KEY_RIGHT)){
+        player.rect.x += player.speed;
+        player.direction = "right";
+    }else if(IsKeyDown(KEY_UP)){
+        player.rect.y -= player.speed;
+        player.direction = "up";
+    }else if(IsKeyDown(KEY_DOWN)){
+        player.rect.y += player.speed;
+        if(player.direction == "up"){
+            player.direction = "down";
+        }
+    }
 }
 
 // Draw Map
@@ -117,12 +132,45 @@ void updateHUD(){
     DrawFPS(25, 25);
 }
 
+// Draw player
+void drawPlayer(){
+    if(player.direction == "up"){
+        DrawTextureRec(
+            player_textures,
+            (Rectangle){ 0, 32, 32, 32 },
+            (Vector2){player.rect.x, player.rect.y},
+            WHITE
+        );
+    }else if(player.direction == "down"){
+        DrawTextureRec(
+            player_textures,
+            (Rectangle){ 0, 0, 32, 32 },
+            (Vector2){player.rect.x, player.rect.y},
+            WHITE
+        );
+    }else if(player.direction == "left"){
+        DrawTextureRec(
+            player_textures,
+            (Rectangle){ 32, 0, 32, 32 },
+            (Vector2){player.rect.x, player.rect.y},
+            WHITE
+        );
+    }else if(player.direction == "right"){
+        DrawTextureRec(
+            player_textures,
+            (Rectangle){ 0, 0, 32, 32 },
+            (Vector2){player.rect.x, player.rect.y},
+            WHITE
+        );
+    }
+}
+
 // Update Elements Relative to Camera
 void updateRelativeToCamera(){
     camera.target = (Vector2){player.rect.x, player.rect.y};
     BeginMode2D(camera);
     drawMap();
-    DrawRectangleRec(player.rect, BLACK);
+    drawPlayer();
     EndMode2D();
 }
 
@@ -137,6 +185,8 @@ void updateCanvas(){
 
 // Initialise program
 void init(){
+    // Settings
+    SetTargetFPS(60);
     // Init window
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE);
     if(!IsWindowReady()){
@@ -153,7 +203,9 @@ void init(){
     camera.target = (Vector2){player.rect.x, player.rect.y};
     camera.offset = (Vector2){ SCREEN_WIDTH/2, SCREEN_HEIGHT/2 };
     camera.rotation = 0.0f;
-    camera.zoom = 2.0f;
+    camera.zoom = 1.5f;
     // Load map data
     prepareTerrain();
+    // Load textures
+    player_textures = LoadTexture("assets/images/hacker.png");
 }

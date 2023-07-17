@@ -303,10 +303,10 @@ void init(){
     }
     // Setup UI Tiles
     for(int i=0;i<sprite_count-1;i++){
-        ui_tiles[ui_tile_count].rect = (Rectangle){SCREEN_WIDTH-48, 16.0f+(i*24), 32, 32};
+        ui_tiles[ui_tile_count].rect = (Rectangle){SCREEN_WIDTH-96, 16.0f+(i*24), 32, 32};
         ui_tiles[ui_tile_count].sprite = sprites[i];
         ui_tile_count++;
-        ui_tiles[ui_tile_count].rect = (Rectangle){SCREEN_WIDTH-96, 16.0f+(i*24), 32, 32};
+        ui_tiles[ui_tile_count].rect = (Rectangle){SCREEN_WIDTH-48, 16.0f+(i*24), 32, 32};
         i++;
         ui_tiles[ui_tile_count].sprite = sprites[i];
         ui_tile_count++;

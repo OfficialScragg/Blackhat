@@ -49,14 +49,14 @@ Camera2D camera = { 0 };
 Tile tiles[10000];
 Tile layer_one[10000];
 int tile_count = 10000;
-Sprite sprites[1000];
+Sprite sprites[20000];
 int sprite_count = 0;
 Texture2D terrain_textures_one;
 Texture2D terrain_textures_two;
 Texture2D terrain_textures_three;
 Texture2D terrain_textures_four;
 int selected_sprite = 4;
-UITile ui_tiles[1000];
+UITile ui_tiles[20000];
 int ui_tile_count = 0;
 float rotation = 0.0f;
 int layer = 0;
@@ -75,7 +75,7 @@ void mouseMovement(){
     float wheel = GetMouseWheelMove();
     if (wheel != 0)
     {
-        if(CheckCollisionPointRec(GetMousePosition(), (Rectangle){SCREEN_WIDTH-64.0f, 0.0f, 64.0f, SCREEN_HEIGHT})){
+        if(CheckCollisionPointRec(GetMousePosition(), (Rectangle){SCREEN_WIDTH-112.0f, 0.0f, 112.0f, SCREEN_HEIGHT})){
             for(int i=0;i<ui_tile_count;i++){
                 ui_tiles[i].rect.y += wheel*50.0f;
             }
@@ -130,17 +130,30 @@ void drawTerrain(){
 // Prepare map terrain tiles
 void loadTextureMaps(){
     // Prepare textures
-    terrain_textures_one = LoadTexture("assets/images/modern-ext/32px+VXACE/Modern_Outside_A1.png");
-    terrain_textures_two = LoadTexture("assets/images/modern-ext/32px+VXACE/Modern_Outside_A2.png");
-    terrain_textures_three = LoadTexture("assets/images/modern-ext/32px+VXACE/Modern_Outside_A3.png");
-    terrain_textures_four = LoadTexture("assets/images/modern-ext/32px+VXACE/Modern_Outside_A4.png");
+    terrain_textures_one = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a2-square.png");
+    terrain_textures_two = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a4-square.png");
+    terrain_textures_three = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a1-square.png");
+    terrain_textures_four = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a3.png");
     // Read map data from file and create tiles
     for(int i=0;i<4;i++){
+        if(i == 0){
+            int num_rows = 54;
+            int num_cols = 72;
+        }else if(i == 1){
+            int num_rows = 48;
+            int num_cols = 70;
+        }else if(i == 2){
+            int num_rows = 44;
+            int num_cols = 27;
+        }else{
+            int num_rows = 48;
+            int num_cols = 24;
+        } 
         int row = 0;
         int col = 0;
         int sprite_size = 32;
-        int num_rows = 12;
-        int num_cols = 16;
+        int num_rows = 54;
+        int num_cols = 72;
         
         for(int y=0;y<num_rows;y++){
             row += sprite_size;
@@ -154,7 +167,7 @@ void loadTextureMaps(){
                     sprites[sprite_count].texture_map = terrain_textures_three;
                 }else{
                     sprites[sprite_count].texture_map = terrain_textures_four;
-                }
+                } 
                 sprites[sprite_count].rect = (Rectangle){row, col, sprite_size, sprite_size};
                 sprites[sprite_count].color = WHITE;
                 sprites[sprite_count].type = "terrain";
@@ -163,6 +176,7 @@ void loadTextureMaps(){
             }
         }
     }
+    printf("Sprite count: %d\n", sprite_count);
 }
 
 // Draw Map Grid
@@ -190,7 +204,7 @@ void drawGrid(){
         if(layer < 0) layer = 0;
     }
     if(IsMouseButtonDown(0)){
-        if(CheckCollisionPointRec(GetMousePosition(), (Rectangle){SCREEN_WIDTH-64.0f, 0.0f, 64.0f, SCREEN_HEIGHT})){
+        if(CheckCollisionPointRec(GetMousePosition(), (Rectangle){SCREEN_WIDTH-112.0f, 0.0f, 112.0f, SCREEN_HEIGHT})){
             if(IsMouseButtonPressed(0)){
                 for(int i=0;i<ui_tile_count;i++){
                     if(CheckCollisionPointRec(GetMousePosition(), ui_tiles[i].rect)){
@@ -223,7 +237,7 @@ void drawGrid(){
 // Update HUD Elements
 void updateHUD(){
     DrawFPS(25, 25);
-    DrawRectangle(SCREEN_WIDTH-64.0f, 0.0f, 64.0f, SCREEN_HEIGHT, DARKGRAY);
+    DrawRectangle(SCREEN_WIDTH-112.0f, 0.0f, 112.0f, SCREEN_HEIGHT, DARKGRAY);
 
     for(int i=0;i<ui_tile_count;i++){
         DrawTextureRec(ui_tiles[i].sprite.texture_map, ui_tiles[i].sprite.rect, (Vector2){ui_tiles[i].rect.x, ui_tiles[i].rect.y}, WHITE);
@@ -288,8 +302,12 @@ void init(){
         col+=32;
     }
     // Setup UI Tiles
-    for(int i=0;i<sprite_count;i++){
-        ui_tiles[ui_tile_count].rect = (Rectangle){SCREEN_WIDTH-48, 16.0f+(i*48), 32, 32};
+    for(int i=0;i<sprite_count-1;i++){
+        ui_tiles[ui_tile_count].rect = (Rectangle){SCREEN_WIDTH-48, 16.0f+(i*24), 32, 32};
+        ui_tiles[ui_tile_count].sprite = sprites[i];
+        ui_tile_count++;
+        ui_tiles[ui_tile_count].rect = (Rectangle){SCREEN_WIDTH-96, 16.0f+(i*24), 32, 32};
+        i++;
         ui_tiles[ui_tile_count].sprite = sprites[i];
         ui_tile_count++;
     }

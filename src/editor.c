@@ -77,7 +77,7 @@ void mouseMovement(){
     {
         if(CheckCollisionPointRec(GetMousePosition(), (Rectangle){SCREEN_WIDTH-112.0f, 0.0f, 112.0f, SCREEN_HEIGHT})){
             for(int i=0;i<ui_tile_count;i++){
-                ui_tiles[i].rect.y += wheel*50.0f;
+                ui_tiles[i].rect.y += wheel*250.0f;
             }
         }else{
             Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
@@ -131,52 +131,63 @@ void drawTerrain(){
 void loadTextureMaps(){
     // Prepare textures
     terrain_textures_one = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a2-square.png");
-    terrain_textures_two = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a4-square.png");
-    terrain_textures_three = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a1-square.png");
-    terrain_textures_four = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a3.png");
-    // Read map data from file and create tiles
-    for(int i=0;i<4;i++){
-        if(i == 0){
-            int num_rows = 54;
-            int num_cols = 72;
-        }else if(i == 1){
-            int num_rows = 48;
-            int num_cols = 70;
-        }else if(i == 2){
-            int num_rows = 44;
-            int num_cols = 27;
-        }else{
-            int num_rows = 48;
-            int num_cols = 24;
-        } 
-        int row = 0;
-        int col = 0;
-        int sprite_size = 32;
-        int num_rows = 54;
-        int num_cols = 72;
-        
-        for(int y=0;y<num_rows;y++){
-            row += sprite_size;
-            col = 0;
-            for(int x=0;x<num_cols;x++){
-                if(i == 0){
+    int row = 0;
+    int col = 0;
+    int sprite_size = 32;
+    int num_rows = 12;
+    int num_cols = 9;
+    int row_offset = 0;
+    int col_offset = 0;
+    int num_block_cols = 8;
+    int num_block_rows = 4;
+    
+    for(int c=0;c<num_block_cols;c++){
+        col_offset = sprite_size+(c*(num_cols*sprite_size));
+        for(int b=0;b<num_block_rows;b++){
+            row_offset = sprite_size+(b*(num_rows*sprite_size));
+            row = 0;
+            if(c == 3 & (b == 2 | b == 3)){
+                continue;
+            }
+            for(int y=0;y<num_rows-1;y++){
+                col = 0;
+                for(int x=0;x<num_cols-1;x++){
+                    if(col == 0 & (row == 5 | row == 7 | row == 8 | row == 10)){
+                        col++;
+                        continue;
+                    }else if(col == 1 & (row == 6 | row == 9)){
+                        col++;
+                        continue;
+                    }else if(col == 2 & (row == 5 | row == 7 | row == 8 | row == 10)){
+                        col++;
+                        continue;
+                    }else if(col == 3 & (row == 5 | row == 7 | row == 8 | row == 10)){
+                        col++;
+                        continue;
+                    }else if(col == 4 & (row == 6 | row == 9)){
+                        col++;
+                        continue;
+                    }else if(col == 5 & (row == 5 | row == 7 | row == 8 | row == 10)){
+                        col++;
+                        continue;
+                    }else if(col == 6 & (row == 5 | row == 6 | row == 9)){
+                        col++;
+                        continue;
+                    }else if(col == 7 & (row == 6 | row == 9 )){
+                        col++;
+                        continue;
+                    }
                     sprites[sprite_count].texture_map = terrain_textures_one;
-                }else if(i == 1){
-                    sprites[sprite_count].texture_map = terrain_textures_two;
-                }else if(i == 2){
-                    sprites[sprite_count].texture_map = terrain_textures_three;
-                }else{
-                    sprites[sprite_count].texture_map = terrain_textures_four;
-                } 
-                sprites[sprite_count].rect = (Rectangle){row, col, sprite_size, sprite_size};
-                sprites[sprite_count].color = WHITE;
-                sprites[sprite_count].type = "terrain";
-                col += sprite_size;
-                sprite_count++;
+                    sprites[sprite_count].rect = (Rectangle){row_offset+row*sprite_size, col_offset+col*sprite_size, sprite_size, sprite_size};
+                    sprites[sprite_count].color = WHITE;
+                    sprites[sprite_count].type = "terrain";
+                    col++;
+                    sprite_count++;
+                }
+                row++;
             }
         }
     }
-    printf("Sprite count: %d\n", sprite_count);
 }
 
 // Draw Map Grid

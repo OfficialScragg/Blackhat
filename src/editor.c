@@ -81,10 +81,19 @@ void mouseMovement(){
             }
         }else{
             Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
-            //camera.offset = GetMousePosition();
             const float zoomIncrement = 0.1f;
             camera.zoom += (wheel*zoomIncrement);
             if (camera.zoom < zoomIncrement) camera.zoom = zoomIncrement;
+        }
+    }
+    if(IsKeyPressed(KEY_PAGE_DOWN)){
+        for(int i=0;i<ui_tile_count;i++){
+            ui_tiles[i].rect.y -= 5000.0f;
+        }
+    }
+    if(IsKeyPressed(KEY_PAGE_UP)){
+        for(int i=0;i<ui_tile_count;i++){
+            ui_tiles[i].rect.y += 5000.0f;
         }
     }
     if(IsMouseButtonPressed(2)){
@@ -131,60 +140,87 @@ void drawTerrain(){
 void loadTextureMaps(){
     // Prepare textures
     terrain_textures_one = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a2-square.png");
-    int row = 0;
-    int col = 0;
-    int sprite_size = 32;
-    int num_rows = 12;
-    int num_cols = 9;
-    int row_offset = 0;
-    int col_offset = 0;
-    int num_block_cols = 8;
-    int num_block_rows = 4;
-    
-    for(int c=0;c<num_block_cols;c++){
-        col_offset = sprite_size+(c*(num_cols*sprite_size));
-        for(int b=0;b<num_block_rows;b++){
-            row_offset = sprite_size+(b*(num_rows*sprite_size));
-            row = 0;
-            if(c == 3 & (b == 2 | b == 3)){
-                continue;
-            }
-            for(int y=0;y<num_rows-1;y++){
-                col = 0;
-                for(int x=0;x<num_cols-1;x++){
-                    if(col == 0 & (row == 5 | row == 7 | row == 8 | row == 10)){
-                        col++;
-                        continue;
-                    }else if(col == 1 & (row == 6 | row == 9)){
-                        col++;
-                        continue;
-                    }else if(col == 2 & (row == 5 | row == 7 | row == 8 | row == 10)){
-                        col++;
-                        continue;
-                    }else if(col == 3 & (row == 5 | row == 7 | row == 8 | row == 10)){
-                        col++;
-                        continue;
-                    }else if(col == 4 & (row == 6 | row == 9)){
-                        col++;
-                        continue;
-                    }else if(col == 5 & (row == 5 | row == 7 | row == 8 | row == 10)){
-                        col++;
-                        continue;
-                    }else if(col == 6 & (row == 5 | row == 6 | row == 9)){
-                        col++;
-                        continue;
-                    }else if(col == 7 & (row == 6 | row == 9 )){
-                        col++;
+    terrain_textures_two = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a4-square.png");
+    terrain_textures_three = LoadTexture("assets/images/modern-ext/32px+VXACE/non-rm-a1-square.png");
+    for(int i=0;i<3;i++){
+        int row = 0;
+        int col = 0;
+        int sprite_size = 32;
+        int num_rows = 12;
+        int num_cols = 9;
+        int row_offset = 0;
+        int col_offset = 0;
+        int num_block_cols = 8;
+        int num_block_rows = 4;
+        if(i == 1){
+            num_block_cols = 6;
+            num_block_rows = 4;
+        }else if(i == 2){
+            num_block_cols = 3;
+            num_block_rows = 4;
+        }
+        
+        for(int c=0;c<num_block_cols;c++){
+            col_offset = sprite_size+(c*(num_cols*sprite_size));
+            for(int b=0;b<num_block_rows;b++){
+                row_offset = sprite_size+(b*(num_rows*sprite_size));
+                row = 0;
+                if(i == 0){
+                    if(c == 3 & (b == 2 | b == 3)){
                         continue;
                     }
-                    sprites[sprite_count].texture_map = terrain_textures_one;
-                    sprites[sprite_count].rect = (Rectangle){row_offset+row*sprite_size, col_offset+col*sprite_size, sprite_size, sprite_size};
-                    sprites[sprite_count].color = WHITE;
-                    sprites[sprite_count].type = "terrain";
-                    col++;
-                    sprite_count++;
+                }else if(i == 1){
+                    if(c == 1 & b == 2){
+                        continue;
+                    }
+                }else if(i == 2){
+                    if((c == 1 & (b == 1 | b == 3))|(c == 2 & (b == 1 | b == 3))){
+                        continue;
+                    }
                 }
-                row++;
+                for(int y=0;y<num_rows-1;y++){
+                    col = 0;
+                    for(int x=0;x<num_cols-1;x++){
+                        if(col == 0 & (row == 5 | row == 7 | row == 8 | row == 10)){
+                            col++;
+                            continue;
+                        }else if(col == 1 & (row == 6 | row == 9)){
+                            col++;
+                            continue;
+                        }else if(col == 2 & (row == 5 | row == 7 | row == 8 | row == 10)){
+                            col++;
+                            continue;
+                        }else if(col == 3 & (row == 5 | row == 7 | row == 8 | row == 10)){
+                            col++;
+                            continue;
+                        }else if(col == 4 & (row == 6 | row == 9)){
+                            col++;
+                            continue;
+                        }else if(col == 5 & (row == 5 | row == 7 | row == 8 | row == 10)){
+                            col++;
+                            continue;
+                        }else if(col == 6 & (row == 5 | row == 6 | row == 9)){
+                            col++;
+                            continue;
+                        }else if(col == 7 & (row == 6 | row == 9 )){
+                            col++;
+                            continue;
+                        }
+                        if(i == 0){
+                            sprites[sprite_count].texture_map = terrain_textures_one;
+                        }else if(i == 1){
+                            sprites[sprite_count].texture_map = terrain_textures_two;  
+                        }else if(i == 2){
+                            sprites[sprite_count].texture_map = terrain_textures_three;  
+                        }
+                        sprites[sprite_count].rect = (Rectangle){row_offset+row*sprite_size, col_offset+col*sprite_size, sprite_size, sprite_size};
+                        sprites[sprite_count].color = WHITE;
+                        sprites[sprite_count].type = "terrain";
+                        col++;
+                        sprite_count++;
+                    }
+                    row++;
+                }
             }
         }
     }

@@ -4,13 +4,14 @@
 #include "raylib.h"
 
 // Constants
-#define SCREEN_HEIGHT 480
-#define SCREEN_WIDTH 720
+#define INIT_SCREEN_HEIGHT 480
+#define INIT_SCREEN_WIDTH 720
 #define TITLE "Blackhat"
 
 // Structs
 typedef struct Player {
     Rectangle rect;
+    bool blocked[4];
     float speed;
     float health;
 } Player;
@@ -29,14 +30,20 @@ void playerMovement();
 void drawMap();
 void prepareTerrain();
 void drawObjects();
+void updateWindowSize();
+void updatePlayerCollisions(Tile t);
+void resetPlayerCollisions();
 
 // Globals
 Camera2D camera = { 0 };
 Tile tiles[100000];
 Texture2D terrain_textures;
 int tile_count = 0;
+int SCREEN_HEIGHT = INIT_SCREEN_HEIGHT;
+int SCREEN_WIDTH = INIT_SCREEN_WIDTH;
 Player player = {
-    { SCREEN_WIDTH/2-25, SCREEN_HEIGHT/2-25, 16, 16 },
+    { INIT_SCREEN_WIDTH/2-424, INIT_SCREEN_HEIGHT/2-400, 16, 16 },
+    { false, false, false, false },
     0.5f,
     100.0f
 };
@@ -45,18 +52,53 @@ Player player = {
 int main(void){
     init();
     while(!WindowShouldClose()){
-        playerMovement();
+        updateWindowSize();
+        resetPlayerCollisions();
         updateCanvas();
+        playerMovement();
     }
     return 0;
+}
+// Update Player Collisions States
+void resetPlayerCollisions(){
+    player.blocked[0] = false;
+    player.blocked[1] = false;
+    player.blocked[2] = false;
+    player.blocked[3] = false;
+}
+
+// Update Player Collisions States (Sketchy, should redo it)
+void updatePlayerCollisions(Tile t){
+    // Check if Water Tile
+    if (t.type == "water"){
+        // Check if aligned
+        if ((t.rect.x < player.rect.x && t.rect.x+16 > player.rect.x) || (t.rect.x < player.rect.x+16 && t.rect.x+16 > player.rect.x+16)){
+            if ((t.rect.y <= player.rect.y+16) && (t.rect.y - player.rect.y <= 16)){
+                // Blocked above
+                player.blocked[0] = true;
+            } else if ((t.rect.y+16 <= player.rect.y) && (player.rect.y - t.rect.y <= 16)){
+                // Blocked below
+                player.blocked[1] = true;
+            }
+        }else if ((t.rect.y < player.rect.y && t.rect.y+16 > player.rect.y) || (t.rect.y < player.rect.y+16 && t.rect.y+16 > player.rect.y+16)){
+            if ((t.rect.x+16 <= player.rect.x) && (player.rect.x - t.rect.x <= 16)){
+                // Blocked left
+                player.blocked[2] = true;
+            } else if ((t.rect.x <= player.rect.x+16) && (t.rect.x - player.rect.x <= 16)){
+                // Blocked right
+                player.blocked[3] = true;
+            }
+        }
+    }
 }
 
 // Player movement
 void playerMovement(){
-    if(IsKeyDown(KEY_UP)) player.rect.y -= player.speed;
-    if(IsKeyDown(KEY_DOWN)) player.rect.y += player.speed;
-    if(IsKeyDown(KEY_LEFT)) player.rect.x -= player.speed;
-    if(IsKeyDown(KEY_RIGHT)) player.rect.x += player.speed;
+    // Update Player Position
+    if(!player.blocked[0] && (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))) player.rect.y -= player.speed;
+    if(!player.blocked[1] && (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))) player.rect.y += player.speed;
+    if(!player.blocked[2] && (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))) player.rect.x -= player.speed;
+    if(!player.blocked[3] && (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))) player.rect.x += player.speed;
 }
 
 // Draw Map
@@ -70,6 +112,8 @@ void drawMap(){
         }else if(tiles[t].type == "path"){
             DrawTextureRec(terrain_textures, (Rectangle){224, 96, 16, 16}, (Vector2){tiles[t].rect.x, tiles[t].rect.y}, tiles[t].color);
         }
+        // Update Player Collisions
+        updatePlayerCollisions(tiles[t]);
     }
     drawObjects();
 }
@@ -126,18 +170,28 @@ void updateRelativeToCamera(){
     EndMode2D();
 }
 
+// Update Window Size
+void updateWindowSize(){
+    if(IsWindowResized()){
+        SCREEN_HEIGHT = GetScreenHeight();
+        SCREEN_WIDTH = GetScreenWidth();
+        camera.offset = (Vector2){ SCREEN_WIDTH/2-16, SCREEN_HEIGHT/2-16 };
+    }
+}
+
 // Draw to window
 void updateCanvas(){
     BeginDrawing();
-    ClearBackground(WHITE);
+    ClearBackground(BLACK);
+    updateRelativeToCamera();
     updateHUD();
-    updateRelativeToCamera(); 
     EndDrawing();
 }
 
 // Initialise program
 void init(){
     // Init window
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE);
     if(!IsWindowReady()){
         printf("Error: Window init failed.\n");
@@ -151,7 +205,7 @@ void init(){
     }
     // Init camera
     camera.target = (Vector2){player.rect.x, player.rect.y};
-    camera.offset = (Vector2){ SCREEN_WIDTH/2, SCREEN_HEIGHT/2 };
+    camera.offset = (Vector2){ SCREEN_WIDTH/2-16, SCREEN_HEIGHT/2-16 };
     camera.rotation = 0.0f;
     camera.zoom = 2.0f;
     // Load map data
